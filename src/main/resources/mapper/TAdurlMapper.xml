@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.erya.dao.TAdurlMapper" >
+
+    <resultMap id="BaseResultMap" type="com.erya.bean.po.TAdurl" >
+        <id column="id" property="id" jdbcType="INTEGER" />
+        <result column="adurl" property="adurl" jdbcType="VARCHAR" />
+        <result column="adcontent" property="adcontent" jdbcType="VARCHAR" />
+    </resultMap>
+
+    <sql id="Base_Column_List" >
+        id, adurl, adcontent
+    </sql>
+
+    <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Integer" >
+        select 
+        <include refid="Base_Column_List" />
+        from t_adurl
+        where id = #{id,jdbcType=INTEGER}
+    </select>
+
+    <delete id="deleteByPrimaryKey" parameterType="java.lang.Integer" >
+        delete from t_adurl
+        where id = #{id,jdbcType=INTEGER}
+    </delete>
+
+    <insert id="insert" parameterType="com.erya.bean.po.TAdurl" >
+        insert into t_adurl (id, adurl, adcontent
+            )
+        values (#{id,jdbcType=INTEGER}, #{adurl,jdbcType=VARCHAR}, #{adcontent,jdbcType=VARCHAR}
+            )
+    </insert>
+
+    <insert id="insertSelective" parameterType="com.erya.bean.po.TAdurl" >
+        insert into t_adurl
+        <trim prefix="(" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                id,
+            </if>
+            <if test="adurl != null" >
+                adurl,
+            </if>
+            <if test="adcontent != null" >
+                adcontent,
+            </if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides="," >
+            <if test="id != null" >
+                #{id,jdbcType=INTEGER},
+            </if>
+            <if test="adurl != null" >
+                #{adurl,jdbcType=VARCHAR},
+            </if>
+            <if test="adcontent != null" >
+                #{adcontent,jdbcType=VARCHAR},
+            </if>
+        </trim>
+    </insert>
+
+    <update id="updateByPrimaryKeySelective" parameterType="com.erya.bean.po.TAdurl" >
+        update t_adurl
+        <set >
+            <if test="adurl != null" >
+                adurl = #{adurl,jdbcType=VARCHAR},
+            </if>
+            <if test="adcontent != null" >
+                adcontent = #{adcontent,jdbcType=VARCHAR},
+            </if>
+        </set>
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+
+    <update id="updateByPrimaryKey" parameterType="com.erya.bean.po.TAdurl" >
+        update t_adurl
+        set adurl = #{adurl,jdbcType=VARCHAR},
+            adcontent = #{adcontent,jdbcType=VARCHAR}
+        where id = #{id,jdbcType=INTEGER}
+    </update>
+</mapper>
