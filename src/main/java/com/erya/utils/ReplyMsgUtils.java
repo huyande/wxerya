@@ -1,17 +1,11 @@
 package com.erya.utils;
 
-import com.erya.bean.bo.Image;
-import com.erya.bean.bo.ImageMessage;
-import com.erya.bean.bo.TextMessage;
+import com.erya.bean.bo.*;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.Map;
-import java.util.UUID;
-
-
+import java.util.*;
 
 /**
  * 消息回复 工具方法 
@@ -65,7 +59,31 @@ public class ReplyMsgUtils {
 		String sendTextMsg = sendTextMsg(textMessage);
 		return sendTextMsg;
 	}
-	
+
+	/**
+	 * 回复图文信息
+	 * @param msgXmlMap
+	 * @param WxUser
+	 * @return
+	 */
+	public static String replyImageTextMsg(Map<String, String> msgXmlMap,String WxUser,String url) {
+		ImageTextMessage imageTextMessage = new ImageTextMessage();
+		imageTextMessage.setFromUserName(WxUser);
+		imageTextMessage.setToUserName(msgXmlMap.get("FromUserName"));
+		imageTextMessage.setCreateTime(new Date().getTime());
+		imageTextMessage.setMsgType("news");
+		imageTextMessage.setArticleCount(1);
+		List<Article> articles = new ArrayList<>();
+		Article article = new Article();
+		article.setDescription("想做一些更好的功能，所以这篇文章需要一些点击量，这会使我获得一些报酬，来购买服务器。");
+		article.setTitle("帮忙点下此文章，我想换个牛X的服务器。");
+		article.setPicUrl("https://cn.bing.com/th?id=OIP.VuJu-rFWose_hhkroSHrsQHaFj&pid=Api&rs=1");
+		article.setUrl(url);
+		articles.add(article);
+		imageTextMessage.setArticles(articles);
+		return sendImageTextMsg(imageTextMessage);
+	}
+
 	
 	/**
 	 *  生成文本消息
@@ -83,7 +101,19 @@ public class ReplyMsgUtils {
 	public static String sendImageMsg(ImageMessage imageMessage) {
 		return WXmlUtils.imageMessageToXml(imageMessage);
 	}
-	
+
+	/**
+	 * 生成图文消息
+	 * @param imageMessage
+	 * @return
+	 */
+	public static String sendImageTextMsg(ImageTextMessage imageTextMessage) {
+		return WXmlUtils.imageTextMessageToXml(imageTextMessage);
+	}
+
+
+
+
 	/**
 	 * 获取到消息中的图片地址 将其上传到素材中
 	 * 
@@ -120,4 +150,5 @@ public class ReplyMsgUtils {
 		}
 		return media_id;
 	}
+
 }

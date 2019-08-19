@@ -21,10 +21,10 @@ public class SolrSearchController {
 	
 	@RequestMapping("/search")
 	public String search(String param){
-		log.info("搜索内容："+param);
+		log.info("搜索内容："+param.replaceAll( "[\\p{P}+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]" , "").replaceAll("\\(|\\)", ""));
 		PageInfo<AnswerSet> pageInfo=null;
 		try {
-			pageInfo = solrService.search(param);
+			pageInfo = solrService.search(param.replaceAll( "[\\p{P}+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]" , "").replaceAll("\\(|\\)", ""));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

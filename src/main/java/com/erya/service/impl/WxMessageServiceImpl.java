@@ -1,6 +1,6 @@
 package com.erya.service.impl;
 
-import com.erya.bean.po.TAdurl;
+import com.erya.bean.bo.WxUserSearch;
 import com.erya.bean.po.TAnswer;
 import com.erya.bean.po.TQuestion;
 import com.erya.bean.po.TSubject;
@@ -13,6 +13,7 @@ import com.erya.service.SolrService;
 import com.erya.service.WxMessageService;
 import com.erya.utils.ReplyMsgUtils;
 import com.erya.utils.WXmlUtils;
+import com.erya.utils.WxFileUtils;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -21,6 +22,7 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.File;
 import java.util.*;
 
 @Service
@@ -63,7 +65,7 @@ public class WxMessageServiceImpl implements WxMessageService{
 	}
 
 	@Override
-	public String sendDealMsg(Map<String, String> msgXmlMap,String WxUser,String appid,String secret,String wXfileImagePath) throws Exception{
+	public String sendDealMsg(Map<String, String> msgXmlMap,String WxUser,String appid,String secret,String wXfileImagePath,String adUrlgotUrl,String adUrlgotContent,String adUrlnotGotUrl,String adUrlnotGotContent,String userSaveFilePath,boolean openAdLinkFlag) throws Exception{
 		//System.out.println(msgXmlMap);
 		//消息类型
 		String MsgType = msgXmlMap.get("MsgType");
@@ -84,32 +86,71 @@ public class WxMessageServiceImpl implements WxMessageService{
 						}else {
 							log.info("输入问题："+msgXmlMap.get("Content")+"====openid:"+msgXmlMap.get("FromUserName"));
 							//PageInfo<AnswerSet> answerSet = searchQuestByContentLike(1,3,msgXmlMap.get("Content").replaceAll("[\\pP‘’“”]", ""));
-							PageInfo<AnswerSet> answerSet = solrService.search(msgXmlMap.get("Content"));
-							List<AnswerSet> list = answerSet.getList();
-							if(list.size()>0) {
-								for(AnswerSet ans :list) {
-									sb.append("【问题 】："+ans.getQuestion()).append("\n\n").append("【答案】："+ans.getAnswerStr()).append("\n\n");
-									if(ans.getAnswers()!=null && ans.getAnswers().size()>0) {
-										for(TAnswer tAns :ans.getAnswers()) {
-											sb.append("☞"+tAns.getAnswer()).append("\n\n");
+							//System.out.println(msgXmlMap.get("Content").replaceAll( "[\\p{P}+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]" , "").replaceAll("\\(|\\)", ""));
+
+							//读取文件获取文件中的信息
+							//是否让其搜索标识
+							boolean is_search = false;
+
+							if(openAdLinkFlag){//是否开启搜索广告
+								File file = new File(userSaveFilePath);
+								if(file.exists()){
+									if(file.length()!=0  ){ //如果文件不为空
+										List<WxUserSearch> wxUserSearches= (List<WxUserSearch>) WxFileUtils.readWxUserByFile(userSaveFilePath);
+										for(WxUserSearch wxUser :wxUserSearches){
+											if(wxUser.getOpenid().equals(msgXmlMap.get("FromUserName"))){
+												System.out.println(wxUser);
+												//此条件可时间 自己写的页面 使其跳转
+												//is_search=(wxUser.getSearchCount()>3 && !wxUser.getClickLink())?true:false;
+												if(!wxUser.getClickLink()){
+													is_search=wxUser.getSearchCount()>3?true:false;
+												}
+												break;
+											}
 										}
+										//保存当前信息
+										WxFileUtils.wirteWxUserToFile(msgXmlMap,is_search,userSaveFilePath);
+									}else{//为空时 直接写文件
+										WxFileUtils.wirteWxUserToFile(msgXmlMap,false,userSaveFilePath);
 									}
-									
-									sb.append("-/:rose《"+ans.getSubjectName()+"》/:rose").append("\n\n");
+								}else{
+									WxFileUtils.wirteWxUserToFile(msgXmlMap,false,userSaveFilePath);
 								}
+							}
+
+							if(!is_search){
+								PageInfo<AnswerSet> answerSet = solrService.search(msgXmlMap.get("Content").replaceAll( "[\\p{P}+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]" , "").replaceAll("\\(|\\)", ""));
+								List<AnswerSet> list = answerSet.getList();
+									if(list.size()>0) {
+										for(AnswerSet ans :list) {
+											sb.append("【问题 】："+ans.getQuestion()).append("\n\n").append("【答案】："+ans.getAnswerStr()).append("\n\n");
+											if(ans.getAnswers()!=null && ans.getAnswers().size()>0) {
+												for(TAnswer tAns :ans.getAnswers()) {
+													sb.append("☞"+tAns.getAnswer()).append("\n\n");
+												}
+											}
+
+											sb.append("-/:rose《"+ans.getSubjectName()+"》/:rose").append("\n\n");
+										}
+										//查询广告数据
+										//TAdurl tAdurl = tAdurlMapper.selectByPrimaryKey(1);
+										//收集答案不容易 帮我点一下广告吧！〔点击该链接 文章下方的广告〕回复【0】 退出搜题
+										sb.append("<a href='"+adUrlgotUrl+"'>"+adUrlgotContent+"</a>").append("\n\n");
+										sb.append("回复【0】 退出搜题").append("\n\n");
+										//发送消息
+										msg = ReplyMsgUtils.replyTextMsg(msgXmlMap,msgXmlMap.get("ToUserName") ,sb.toString());
+								}else {
+										//查询广告数据
+										//TAdurl tAdurl = tAdurlMapper.selectByPrimaryKey(2);
+										sb.append("/::O 您输入的内容 “"+msgXmlMap.get("Content")+"” 未找到答案，请输入题目内容前部分，【点击下方链接，留言反馈你需要的课程信息】").append("\n\n");
+										sb.append("<a href='"+adUrlnotGotUrl+"'>"+adUrlnotGotContent+"</a>").append("\n\n");
+										msg = ReplyMsgUtils.replyTextMsg(msgXmlMap,msgXmlMap.get("ToUserName") ,sb.toString());
+									}
+							}else{
 								//查询广告数据
-								TAdurl tAdurl = tAdurlMapper.selectByPrimaryKey(1);
-								//收集答案不容易 帮我点一下广告吧！〔点击该链接 文章下方的广告〕回复【0】 退出搜题
-								sb.append("<a href='"+tAdurl.getAdurl()+"'>"+tAdurl.getAdcontent()+"</a>").append("\n\n");
-								sb.append("回复【0】 退出搜题").append("\n\n");
-								//发送消息
-								msg = ReplyMsgUtils.replyTextMsg(msgXmlMap,msgXmlMap.get("ToUserName") ,sb.toString());
-							}else {
-								//查询广告数据
-								TAdurl tAdurl = tAdurlMapper.selectByPrimaryKey(2);
-								sb.append("/::O 您输入的内容 “"+msgXmlMap.get("Content")+"” 未找到答案，请输入题目内容前部分，【点击下方链接，留言反馈你需要的课程信息】").append("\n\n");
-								sb.append("<a href='"+tAdurl.getAdurl()+"'>"+tAdurl.getAdcontent()+"</a>").append("\n\n");
-								msg = ReplyMsgUtils.replyTextMsg(msgXmlMap,msgXmlMap.get("ToUserName") ,sb.toString());
+								//TAdurl tAdurl = tAdurlMapper.selectByPrimaryKey(2); adUrlgotUrl
+								msg = ReplyMsgUtils.replyImageTextMsg(msgXmlMap,msgXmlMap.get("ToUserName"),adUrlgotUrl);
+
 							}
 						}
 						
@@ -223,4 +264,5 @@ public class WxMessageServiceImpl implements WxMessageService{
 		handleLastMap.clear();
 		log.info("集合清除成功");
 	}
+
 }

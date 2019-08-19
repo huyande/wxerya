@@ -114,6 +114,41 @@ public class FileUtil {
 			outputStream.close();
 		}
 	}
+	/**
+	 * 创建文本文件
+	 *
+	 * @parma fullFileName 文件路径+文件名称
+	 * @parma txt 文件内容
+	 * @return 是否成功
+	 * @throws Exception
+	 */
+	public static boolean createFile(String destFileName) throws Exception {
+		File file = new File(destFileName);
+		if(file.exists()) {
+			return false;
+		}
+		if (destFileName.endsWith(File.separator)) {
+			return false;
+		}
+		//判断目标文件所在的目录是否存在
+		if(!file.getParentFile().exists()) {
+			//如果目标文件所在的目录不存在，则创建父目录
+			if(!file.getParentFile().mkdirs()) {
+				return false;
+			}
+		}
+		//创建目标文件
+		try {
+			if (file.createNewFile()) {
+				return true;
+			} else {
+				return false;
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+	}
 
 	/**
 	 * 读取文件为字节.

@@ -18,6 +18,6 @@ public interface WxMessageService {
 	 * @param msgXmlMap
 	 * @return
 	 */
-	String sendDealMsg(Map<String, String> msgXmlMap, String WxUser, String appid, String secret, String wXfileImagePath) throws Exception;
+	String sendDealMsg(Map<String, String> msgXmlMap, String WxUser, String appid, String secret, String wXfileImagePath,String adUrlgotUrl,String adUrlgotContent,String adUrlnotGotUrl,String adUrlnotGotContent,String userSaveFilePath,boolean openAdLinkFlag) throws Exception;
 
 }

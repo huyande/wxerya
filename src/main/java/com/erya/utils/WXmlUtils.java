@@ -9,9 +9,7 @@ import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.erya.bean.bo.Image;
-import com.erya.bean.bo.ImageMessage;
-import com.erya.bean.bo.TextMessage;
+import com.erya.bean.bo.*;
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
@@ -89,6 +87,22 @@ public class WXmlUtils {
 		//System.out.println(xstream.toXML(imageMessage));
 		return xstream.toXML(imageMessage);
 		
+	}
+
+	/**
+	 * 图文转成xml
+	 * @MethodName：
+	 *@author:maliran
+	 *@ReturnType:String
+	 *@param
+	 *@return
+	 */
+	public static String imageTextMessageToXml(ImageTextMessage imageTextMessage){
+		XStream xstream = new XStream();//xstream.jar,xmlpull.jar
+		xstream.alias("xml", imageTextMessage.getClass());//置换根节点
+		xstream.alias("item", Article.class);//
+		//System.out.println(xstream.toXML(imageMessage));
+		return xstream.toXML(imageTextMessage);
 	}
 	
     /**

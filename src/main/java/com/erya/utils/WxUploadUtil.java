@@ -117,10 +117,10 @@ public class WxUploadUtil {
         String UPLOAD_ARTICLE_URL = "https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=ACCESS_TOKEN";
         
         String replacedUrl = UPLOAD_FOREVER_MEDIA_URL
-                    .replace("ACCESS_TOKEN", "23_FiBe3Fr0iVGrMU2Lqwu89b4UKjFdi_3pHNTaXm4ayoudMC8GDKoKM5BTLqQtb9ARVUonX8QHWXiC1lDGN1LMCL9ItGxcrJFprT37A0kjdd2n9UDpsltkgh863tff4h5AACnzXYPu2AVX5TTjVAHcAJAHMT")
+                    .replace("ACCESS_TOKEN", "24_7_hr23OY-8diBcEbaZkNRJ2c7tsAKykVjxtHM75PkAST43aKTghEu4-DzmksjHGT0ndOcJUGoOW0Dc9AVZR1a9_BZVpY2eyhoaapXT48CH_PDrUSyDFC77_BOKzKVMSK1Y8C7s8LKss7Mp03MFEgAFAVON")
                     .replace("TYPE", "image");
         String replaceArt_url =UPLOAD_ARTICLE_URL.replace("ACCESS_TOKEN", "23_cR4e5Y2Rm7icyRo7Xqg_9yfZ-q5vesnz-3Yf36-Y4HcDXEqr3bml0ep9NH0s59Xu5wvb-faYwT0wPFVLUUj5YbM9eLOp_yE6o27brK6rpQJ4S4ja4SdI1wutAWqotOzTlFk6Qln3aJ6UF-oxVWGdACABCM");
-        Map<String,String> mapParam = WxUploadUtil.wxUploadFile(replaceArt_url, in,filename);
+        Map<String,String> mapParam = WxUploadUtil.wxUploadFile(replacedUrl, in,filename);
 		System.out.println(mapParam.get("media_id"));
 		System.out.println(mapParam);
         //log.info("微信素材上传结果：[{}]", jsonObject.toString());
