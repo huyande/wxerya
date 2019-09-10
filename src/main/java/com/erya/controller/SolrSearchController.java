@@ -24,7 +24,7 @@ public class SolrSearchController {
 		log.info("搜索内容："+param.replaceAll( "[\\p{P}+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]" , "").replaceAll("\\(|\\)", ""));
 		PageInfo<AnswerSet> pageInfo=null;
 		try {
-			pageInfo = solrService.search(param.replaceAll( "[\\p{P}+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]" , "").replaceAll("\\(|\\)", ""));
+			pageInfo = solrService.search(param.replaceAll( "[\\p{P}+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]" , "").replaceAll("\\(|\\)", ""),3);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

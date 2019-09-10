@@ -1,10 +1,60 @@
 <!DOCTYPE html>
-<html lang="en">
+<#assign ctx=request.contextPath />
+<html>
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Insert title here</title>
+    <script src="${ctx}/js/jquery.js"></script>
 </head>
 <body>
-hello
+<div>
+    <h3>输入题目</h3>
+    <input name="title" id="title" />
+</div>
+<div>
+    <h3>输入作者</h3>
+    <input name="from" id="from" />
+</div>
+<div>
+    <h3>图片链接</h3>
+    <input name="imgUrl" id="imgUrl" />
+</div>
+<div>
+    <h3>输入内容</h3>
+    <!--<input type="text" name="content" id="content" />-->
+    <textarea name="content" id="content" rows="5" cols="25">
+
+    </textarea>
+    <br>
+    <button onclick="create()">生成图文信息</button>
+    <br>
+    <img src="http://5b0988e595225.cdn.sohucs.com/images/20180930/20e743a54b0c4df2a6e0bb8c8a1b99db.gif" id="excImg" style="display:none;margin-top: 20px"></img>
+</div>
 </body>
+<script type="text/javascript">
+    /**
+     添加课程信息
+     */
+    function create(){
+        if($('#title').val().length!=0 && $('#imgUrl').val().length!=0 && $('#content').val().length!=0 && $('#from').val().length!=0){
+            $("#excImg").show();
+            $.ajax({
+                url:'/art/create',
+                type:'post',
+                data:{
+                    "title":$('#title').val(),
+                    "imgUrl":$('#imgUrl').val(),
+                    "content":$('#content').val(),
+                    "from":$('#from').val(),
+                    },
+                success:function(data){
+                    alert(data)
+                    $("#excImg").hide();
+                }
+            })
+        }else{
+            alert('请输入');
+        }
+    }
+</script>
 </html>

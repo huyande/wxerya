@@ -11,6 +11,7 @@ import com.erya.dao.TQuestionMapper;
 import com.erya.dao.TSubjectMapper;
 import com.erya.service.SolrService;
 import com.erya.service.WxMessageService;
+import com.erya.utils.FileUtil;
 import com.erya.utils.ReplyMsgUtils;
 import com.erya.utils.WXmlUtils;
 import com.erya.utils.WxFileUtils;
@@ -18,6 +19,7 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
@@ -36,7 +38,7 @@ public class WxMessageServiceImpl implements WxMessageService{
 	
 	private int flagShareOrBiaob =0; // 1 代表 表白  2 代表分享图片
 
-	
+
 	@Autowired
 	private TQuestionMapper questionMapper;
 	
@@ -51,6 +53,9 @@ public class WxMessageServiceImpl implements WxMessageService{
 
 	@Autowired
 	private SolrService solrService;
+
+	@Autowired
+	private Environment env;
 	
 
 	@Override
@@ -103,13 +108,13 @@ public class WxMessageServiceImpl implements WxMessageService{
 												//此条件可时间 自己写的页面 使其跳转
 												//is_search=(wxUser.getSearchCount()>3 && !wxUser.getClickLink())?true:false;
 												if(!wxUser.getClickLink()){
-													is_search=wxUser.getSearchCount()>3?true:false;
+													is_search=wxUser.getSearchCount()>8?true:false;
 												}
 												break;
 											}
 										}
-										//保存当前信息
-										WxFileUtils.wirteWxUserToFile(msgXmlMap,is_search,userSaveFilePath);
+										//保存当前信息  false
+										WxFileUtils.wirteWxUserToFile(msgXmlMap,false,userSaveFilePath);
 									}else{//为空时 直接写文件
 										WxFileUtils.wirteWxUserToFile(msgXmlMap,false,userSaveFilePath);
 									}
@@ -119,7 +124,7 @@ public class WxMessageServiceImpl implements WxMessageService{
 							}
 
 							if(!is_search){
-								PageInfo<AnswerSet> answerSet = solrService.search(msgXmlMap.get("Content").replaceAll( "[\\p{P}+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]" , "").replaceAll("\\(|\\)", ""));
+								PageInfo<AnswerSet> answerSet = solrService.search(msgXmlMap.get("Content").replaceAll( "[\\p{P}+~$`^=|<>～｀＄＾＋＝｜＜＞￥×]" , "").replaceAll("\\(|\\)", "").replaceAll("单选题","").replaceAll("判断题","").replaceAll("多选题",""));
 								List<AnswerSet> list = answerSet.getList();
 									if(list.size()>0) {
 										for(AnswerSet ans :list) {
@@ -160,6 +165,7 @@ public class WxMessageServiceImpl implements WxMessageService{
 						sb.append("----------/:rose---------").append("\n\n");
 						sb.append("欢迎使用尔雅课答案查询功能").append("\n\n");
 						sb.append("将问题回复到此页面 请等待一段时间").append("\n\n");
+						//sb.append("每日限制查询10次，移步微信小程序不限查询").append("\n\n");
 						sb.append("<a href='https://mp.weixin.qq.com/s/1VilyBA-F_zCAE4ZcwqCOw'>点击我了解如何使用</a>").append("\n\n");
 						sb.append("【回复 0 退出 搜题】").append("\n\n");
 						sb.append("----------/:rose---------").append("\n\n");
@@ -248,10 +254,13 @@ public class WxMessageServiceImpl implements WxMessageService{
 	 */
 	public String menuShow() {
 		 StringBuilder sb = new StringBuilder();
-		 sb.append("请回复对应的数字 进入相对应的功能\n\n").append("-----/:rose菜单STRT/:rose-----").append("\n\n")
-		.append("〖1〗 尔雅超星答案查询\n\n")
+		 //append("请回复对应的数字 进入相对应的功能\n\n").
+		 sb.append("-----/:rose菜单STRT/:rose-----").append("\n\n")
+		.append("〖1〗 回复 1 进入尔雅超星答案查询\n\n")
+		.append("〖2〗 <a href='https://www.wjx.top/jq/17969131.aspx'>点我表白</a>").append("\n\n")
+		.append("〖3〗 <a href='https://www.wjx.top/jq/25772520.aspx'>点我分享校园美照</a>").append("\n\n")
+		.append("〖4〗 <a href='https://mp.weixin.qq.com/s/YEgWC_kSsHm4gbnXrUojkg'>联系我</a>").append("\n\n")
 		.append("-------/:roseEND/:rose-------");
-		 
 		 return sb.toString();
 	}
 
@@ -262,6 +271,10 @@ public class WxMessageServiceImpl implements WxMessageService{
 	public void clearHandleLastMap(){
 		log.info("执行定时任务");
 		handleLastMap.clear();
+		//删除文件
+		if(!FileUtil.isExist(env.getProperty("wx.saveUserFile"))){
+			FileUtil.deleteFile(new File(env.getProperty("wx.saveUserFile")));
+		}
 		log.info("集合清除成功");
 	}
 

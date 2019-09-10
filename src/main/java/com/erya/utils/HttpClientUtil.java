@@ -3,6 +3,8 @@ package com.erya.utils;
 import java.io.IOException;
 
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -91,5 +93,31 @@ public class HttpClientUtil {
         } finally {
             response.close();
         }
+    }
+
+
+    public static String getHtml(String url) throws IOException {
+        String html = "";
+        CloseableHttpClient httpClient = HttpClients.createDefault();// 创建httpClient对象
+        HttpGet httpget = new HttpGet(url);
+        try {
+            HttpResponse responce = httpClient.execute(httpget);//
+            int resStatu = responce.getStatusLine().getStatusCode();
+            if (resStatu == HttpStatus.SC_OK) {
+
+                HttpEntity entity = responce.getEntity();
+                if (entity != null) {
+                    html = EntityUtils.toString(entity);// 获得html源代码
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("访问 " + url + " 出现异常!");
+            e.printStackTrace();
+        } finally {
+            // 释放连接
+            httpClient.close();
+        }
+        //String str = new String(html.getBytes("GB2312"),"utf-8");
+        return html;
     }
 }

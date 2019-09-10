@@ -24,7 +24,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * http通用工具类
+ * 上传图片到微信公众号
  *
  */
 public class WxUploadUtil {
@@ -35,7 +35,7 @@ public class WxUploadUtil {
 
 
     /**
-     * 	把文件上传到指定url上去
+     * 	根据不同的链接 将素材上传到微信服务器上
      * @param url 上传地址
      * @param file 待上传文件
      * @return 返回一个map 集合  存放着微信服务器返回的数据
@@ -91,8 +91,6 @@ public class WxUploadUtil {
 
         return null;
     }
-
-
     private static final byte[] input2byte(InputStream inStream)
             throws IOException {
         ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
@@ -105,9 +103,9 @@ public class WxUploadUtil {
         return in2b;
     }
 
-    
+
     public static void main(String[] args) throws IOException {
-    	String filename="E:\\image\\tem.jpg";
+    	String filename="F:\\wxImage\\FsBcSWQEuC6j_QmadAzoXSZzx6zH.jpg";
     	File file = new File(filename);
     	InputStream in = new FileInputStream(file);
     	// 上传微信永久素材的url
@@ -117,9 +115,13 @@ public class WxUploadUtil {
         String UPLOAD_ARTICLE_URL = "https://api.weixin.qq.com/cgi-bin/media/uploadimg?access_token=ACCESS_TOKEN";
         
         String replacedUrl = UPLOAD_FOREVER_MEDIA_URL
-                    .replace("ACCESS_TOKEN", "24_7_hr23OY-8diBcEbaZkNRJ2c7tsAKykVjxtHM75PkAST43aKTghEu4-DzmksjHGT0ndOcJUGoOW0Dc9AVZR1a9_BZVpY2eyhoaapXT48CH_PDrUSyDFC77_BOKzKVMSK1Y8C7s8LKss7Mp03MFEgAFAVON")
+                    .replace("ACCESS_TOKEN", "24_J5E0lAjUXVRWbJNQyxnlbGWCknhIyT1FByzKATlk-i2-LcGb5XZczV3LV1TNkVgevv7siZLqMWNcJgM0H4P5_x7kEy4ZyZ96PrtyFgCFy_l-Ra0ImHpQPXkFrnK_qELvXC2VkdEK62Vz4cWLIGZjACARPI")
                     .replace("TYPE", "image");
-        String replaceArt_url =UPLOAD_ARTICLE_URL.replace("ACCESS_TOKEN", "23_cR4e5Y2Rm7icyRo7Xqg_9yfZ-q5vesnz-3Yf36-Y4HcDXEqr3bml0ep9NH0s59Xu5wvb-faYwT0wPFVLUUj5YbM9eLOp_yE6o27brK6rpQJ4S4ja4SdI1wutAWqotOzTlFk6Qln3aJ6UF-oxVWGdACABCM");
+
+
+        String replaceArt_url =UPLOAD_FOREVER_MEDIA_URL.replace("ACCESS_TOKEN", "24_QbU6EKvmRMt5ujiLYlgE7yxAtNAt5b2FMF5TZ4Cs8kz5K_aNLvCRYgCNWhnRk9Qs_zix4mYY52kdwfspDsSMzDJEVneDzOW-b9YYhVI8MZoCw9Z54FDxgmxR2DXBD6YZrgAEmA5dJ6CG_PorKXYcAGAFST");
+
+
         Map<String,String> mapParam = WxUploadUtil.wxUploadFile(replacedUrl, in,filename);
 		System.out.println(mapParam.get("media_id"));
 		System.out.println(mapParam);

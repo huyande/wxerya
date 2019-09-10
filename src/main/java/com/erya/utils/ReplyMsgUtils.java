@@ -75,8 +75,10 @@ public class ReplyMsgUtils {
 		imageTextMessage.setArticleCount(1);
 		List<Article> articles = new ArrayList<>();
 		Article article = new Article();
-		article.setDescription("想做一些更好的功能，所以这篇文章需要一些点击量，这会使我获得一些报酬，来购买服务器。");
-		article.setTitle("帮忙点下此文章，我想换个牛X的服务器。");
+		//article.setDescription("想做一些更好的功能，所以这篇文章需要一些点击量，这会使我获得一些报酬，来购买服务器。");
+		//article.setTitle("帮忙点下此文章，我想换个牛X的服务器。");
+		article.setDescription("今日公众号查询题目次数已用完，点击我使用微信小程序查询");
+		article.setTitle("今日查询次数已用完，移步微信小程序不限查询");
 		article.setPicUrl("https://cn.bing.com/th?id=OIP.VuJu-rFWose_hhkroSHrsQHaFj&pid=Api&rs=1");
 		article.setUrl(url);
 		articles.add(article);
@@ -124,7 +126,7 @@ public class ReplyMsgUtils {
 		//素材id
 	    String media_id = "";
 		//下载图片到本地
-		String realpath = DownloadPicFromURLUtil.downloadPicture(PicUrl, wXfileImagePath+UUID.randomUUID().toString()+".png");
+		String realpath = DownloadPicFromURLUtil.downloadFromUrl(PicUrl, wXfileImagePath+UUID.randomUUID().toString()+".png");
 		
 		//调用获取token 
 		//String accessToken = WxAccessTokenUtil.getAccessToken(appid, secret);

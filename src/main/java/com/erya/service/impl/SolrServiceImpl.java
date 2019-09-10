@@ -57,29 +57,6 @@ public class SolrServiceImpl implements SolrService {
 		if (subId == null) {
 			// 查询所有的课程信息
 			List<TSubject> subList = subjectService.selectAllSubJect();
-			/*
-			 * // 根据课程信息查询问题信息 for (TSubject ts : subList) { List<TQuestion>
-			 * list = questionService.selectAllBySubId(ts.getId());
-			 * StringBuilder anStrsb = new StringBuilder(); List<String>
-			 * ansStrList = new ArrayList<>(); // 标识 是否是判断题还是选择题 false 判断题 true
-			 * 选择题 boolean flag = false; for (TQuestion quest : list) {
-			 * AnswerSet answerSet = new AnswerSet(); // 查询答案集合 List<TAnswer>
-			 * answersList = answerMapper.selectByQuestId(quest.getId()); for
-			 * (TAnswer tAnswer : answersList) { // 如果答案的长度大于1 说明是选择题 if
-			 * (tAnswer.getAnswer().length() > 1) { String substring =
-			 * tAnswer.getAnswer().substring(0,
-			 * tAnswer.getAnswer().indexOf('.')); ansStrList.add(substring);
-			 * flag = true; } else { // 其他则是判断题 判断题 无需截取字符串
-			 * ansStrList.add(tAnswer.getAnswer()); } }
-			 * Collections.sort(ansStrList); for (String str : ansStrList) {
-			 * anStrsb.append(str + " "); } answerSet.setQuestId(quest.getId());
-			 * answerSet.setQuestion(quest.getOriginalContent());
-			 * answerSet.setSubjectName(ts.getSubName());
-			 * answerSet.setAnswerStr(anStrsb.toString()); if (flag) {
-			 * answerSet.setAnswers(answersList); }
-			 * 
-			 * anslist.add(answerSet); } }
-			 */
 			anslist = genderBean(subList);
 			num=anslist.size();
 		} else {
@@ -103,12 +80,6 @@ public class SolrServiceImpl implements SolrService {
 					jsonObject.put("id", tans.getId());
 					jsonObject.put("answer", tans.getAnswer());
 					jsonObject.put("questId", tans.getQuestId());
-					//jsonList.add(JacksonUtil.toJSon(tans));
-					/*Map<String,Object> map = new HashMap<>();
-					map.put("id", tans.getId());
-					map.put("answer", tans.getAnswer());
-					map.put("questId", tans.getQuestId());
-					doc.addField("answers", map);*/
 					jsonList.add(jsonObject.toString());
 				}
 				doc.addField("answers", jsonList);
@@ -265,4 +236,53 @@ public class SolrServiceImpl implements SolrService {
 		return pageInfo;
 	}
 
+	@Override
+	public PageInfo<AnswerSet> search(String param, int rows) throws Exception {
+		PageInfo<AnswerSet> pageInfo = new PageInfo<>();
+		//定义集合
+		List<AnswerSet> answerList = new ArrayList<>();
+
+		//创建solr 查询对象 封装solr查询条件
+		//创建solrquery 对象
+		SolrQuery query = new SolrQuery();
+		query.setStart(0);
+		query.setRows(rows);
+		query.setQuery("problem:"+param);
+		QueryResponse response = solrClient.query(query);
+		//获取查询结果
+		SolrDocumentList results = response.getResults();
+		//获取满足查询条件总记录数
+		Long numFound = results.getNumFound();
+		for (SolrDocument solrDocument : results) {
+			//创建返回数据的对象
+			AnswerSet answerSet = new AnswerSet();
+
+			//获取文档域id
+			String id = (String) solrDocument.get("id");
+			String pro =(String) solrDocument.get("problem");
+			List<String> answers =(List<String>) solrDocument.get("answers");
+			//List<String> answers =(List<String>) JacksonUtil.readValue((String)solrDocument.get("answers"), TAnswer.class);
+			String answerStr =(String) solrDocument.get("answerStr");
+			String subjectName =(String) solrDocument.get("subjectName");
+
+			List<TAnswer> tanList = new ArrayList<>();
+			if(answers!=null){
+				for(String str :answers){
+					TAnswer tAnswer = JacksonUtil.readValue(str, TAnswer.class);
+					tanList.add(tAnswer);
+				}
+			}
+
+			//封装数据
+			answerSet.setQuestId(Integer.parseInt(id));
+			answerSet.setQuestion(pro);
+			answerSet.setAnswers(tanList);
+			answerSet.setAnswerStr(answerStr);
+			answerSet.setSubjectName(subjectName);
+			answerList.add(answerSet);
+		}
+		pageInfo.setList(answerList);
+		pageInfo.setTotal(numFound);
+		return pageInfo;
+	}
 }

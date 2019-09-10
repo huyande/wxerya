@@ -14,5 +14,11 @@ public interface SolrService {
 	 * @return
 	 */
 	PageInfo<AnswerSet> search(String param)throws Exception;
+	/**
+	 * solr 搜索方法
+	 * @param param
+	 * @return
+	 */
+	PageInfo<AnswerSet> search(String param,int rows)throws Exception;
 
 }

@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.mail.MessagingException;
+import javax.mail.internet.MimeMessage;
 import javax.servlet.http.HttpServletRequest;
 
 import com.erya.bean.bo.WxUserSearch;
@@ -13,6 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -27,7 +31,19 @@ public class WxMessageController {
 	
 	@Autowired
 	private WxMessageService wxMessageService;
-	
+
+	@Autowired
+	private JavaMailSender mailSender;
+
+	//配置邮件发送方
+	@Value("${spring.mail.username}")
+	private String Sender; //读取配置文件中的参数
+
+	//配置邮件接收方法
+	@Value("${backmessage.mail.accept}")
+	private String mailAccept;
+
+
 	@Value("${wx.number}")
 	private String wxNumber;
 	
@@ -70,8 +86,18 @@ public class WxMessageController {
 			//System.out.println(xmlMsg);
 			return xmlMsg;
 		} catch (Exception e) {
-			e.printStackTrace();
-			String msg = ReplyMsgUtils.replyTextMsg(msgXmlMap, wxNumber, "系统升级维护中...，请稍后再试！");
+			String msg = ReplyMsgUtils.replyTextMsg(msgXmlMap, wxNumber, "系统升级维护中，请晚点在来，我在更新系统，感谢使用！");
+			try {
+				MimeMessage mimeMessage = mailSender.createMimeMessage();
+				MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
+				helper.setFrom(Sender);
+				helper.setTo(mailAccept);//发送给谁
+				helper.setSubject("系统出现异常，请查看 ");//邮件标题
+				helper.setText("公众号出现问题，快快去查看", true);
+				mailSender.send(mimeMessage);
+			} catch (MessagingException ex) {
+				ex.printStackTrace();
+			}
 			return msg;
 		}
 	}

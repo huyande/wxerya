@@ -1,6 +1,9 @@
 package com.erya.utils;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.text.ParseException;
 import java.util.Date;
 import java.util.HashMap;
@@ -54,6 +57,75 @@ public class WxAccessTokenUtil {
 			}
 		}
 	}
+
+	/**
+	* @Description 本地生成token文件 用户保存token
+	* @Author  hyd
+	* @Date   2019/8/22 0022 上午 10:01
+	* @Param
+	* @Return
+	* @Exception
+	*/
+	public static String getAccessToken(String filePath,String appid,String secret ){
+		String accessToken ="";
+		try {
+			//先判断是否存在该文件
+			if(FileUtil.isExist(filePath)){
+				File file = new File(filePath);
+				//判断文件是否有值
+				if(file.length()!=0){
+					//有值则进行读取 并将读取出来的值进行有效时间的判断
+					Map<String,Date> accessMap = (Map<String,Date>)WxFileUtils.readWxUserByFile(filePath);
+					int deltaTime=0; //时间差
+					for(Map.Entry<String, Date> entry: accessMap.entrySet()) {
+						Date oldTime = entry.getValue();
+						deltaTime = DateUtil.getSecondsBetween(oldTime, new Date());
+						System.err.println(deltaTime);
+						if(deltaTime>7200) {
+							//如果时间差大于 7200 秒  重新生成一个 access token  并且先清除map 集合 在添加
+							accessToken = getAccessToken(appid,secret);
+							//先清除集合
+							accessMap.clear();
+							accessMap.put(accessToken, new Date());
+							//保存集合 到文件中
+							FileOutputStream out;
+
+							out = new FileOutputStream(file);
+							ObjectOutputStream objOut = new ObjectOutputStream(out);
+							objOut.writeObject(accessMap);
+							objOut.flush();
+							objOut.close();
+							break;
+						}else{//如果有效
+							accessToken = entry.getKey();
+							break;
+						}
+					}
+				}
+			}else{ //创建该文件 将生成的token 存到改文件中
+				//创建文件
+				FileUtil.createFile(filePath);
+				File file = new File(filePath);
+				Map<String,Date> accessMap = new HashMap<>();
+				accessToken = getAccessToken(appid,secret);
+				accessMap.put(accessToken, new Date());
+				//保存集合 到文件中
+				FileOutputStream out;
+				out = new FileOutputStream(file);
+				ObjectOutputStream objOut = new ObjectOutputStream(out);
+				objOut.writeObject(accessMap);
+				objOut.flush();
+				objOut.close();
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return accessToken;
+	}
+
+
+
+
 	
 	public static void main(String[] args) {
 		/*
